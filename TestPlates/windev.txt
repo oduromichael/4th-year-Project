@@ -1,0 +1,126 @@
+
+nErgebnis is int
+nPDF is int
+sKey is string="YOUR PRODUCT KEY"
+sCode is string="YOUR DEVELOPER CODE"
+
+STRUKTUR_PXO_Options is Structure
+lang is int //PXO_Language
+RegionMode is int //OCR_RegionMode
+whitelist is UNICODE string //BSTR
+blacklist is UNICODE string //BSTR
+DataPath is UNICODE string //language Pack
+ImageFlags is int //DWORD
+raster_dpi is int //int
+accMode is int
+END
+
+
+
+Options is STRUKTUR_PXO_Options
+
+
+// Initialisieren ---------------------------------------
+OCR_Init is API Description
+OCR_Init..DLLName="OcrTools.x86.dll"
+OCR_Init..FunctionName="OCR_Init"
+OCR_Init..CallingConvention=STDCALL
+OCR_Init..ReturnType=apiSystemInt
+OCR_Init..Parameter[1]..Type=apiSystemInt //PDF
+OCR_Init..Parameter[2]..Type=apiString //KEY
+OCR_Init..Parameter[3]..Type=apiString //CODE
+
+
+
+
+nErgebnis=OCR_Init(&nPDF,Null,Null)
+
+
+//Datei laden ------------------------------------------------------
+OCR_LoadW is API Description
+OCR_LoadW..DLLName="OcrTools.x86.dll"
+OCR_LoadW..FunctionName="OCR_LoadW"
+OCR_LoadW..ReturnType=apiSystemInt
+OCR_LoadW..CallingConvention=STDCALL
+OCR_LoadW..Parameter[1]..Type=apiSystemInt //PDF
+OCR_LoadW..Parameter[2]..Type=apiUnicodeString //Inputfile
+
+
+sDateiname is UNICODE string ="heumar.pdf"
+nErgebnis=OCR_LoadW(nPDF,sDateiname)
+
+//Anzahl Seiten
+OCR_GetNumInputPages is API Description
+OCR_GetNumInputPages..DLLName="OcrTools.x86.dll"
+OCR_GetNumInputPages..FunctionName="OCR_GetNumInputPages"
+OCR_GetNumInputPages..ReturnType=apiSystemInt
+OCR_GetNumInputPages..CallingConvention=STDCALL
+OCR_GetNumInputPages..Parameter[1]..Type=apiSystemInt //PDF
+OCR_GetNumInputPages..Parameter[2]..Type=apiSystemInt //Inputfile
+
+nAnzahl_Seiten is int
+
+nErgebnis=OCR_GetNumInputPages(nPDF,&nAnzahl_Seiten)
+
+//Callback ------------------------------------------------------
+OCR_SetCallback is API Description
+OCR_SetCallback..DLLName="OcrTools.x86.dll"
+OCR_SetCallback..FunctionName="OCR_SetCallback"
+OCR_SetCallback..ReturnType=apiSystemInt
+OCR_SetCallback..Parameter[1]..Type=apiSystemInt //PDF
+OCR_SetCallback..Parameter[2]..Type=apiSystemInt //Inputfile
+OCR_SetCallback..Parameter[3]..Type=apiSystemInt //Inputfile
+OCR_SetCallback..CallingConvention = STDCALL
+
+
+
+nErgebnis=OCR_SetCallback(nPDF,&OCR_Callback, 0)
+
+
+
+//Datei umwandeln -----------------------------------------------------
+
+OCR_MakeSearchable is API Description
+OCR_MakeSearchable..DLLName="OcrTools.x86.dll"
+OCR_MakeSearchable..FunctionName="OCR_MakeSearchable"
+OCR_MakeSearchable..ReturnType=apiSystemInt
+OCR_MakeSearchable..Parameter[1]..Type=apiSystemInt//PDF
+OCR_MakeSearchable..Parameter[2]..Type=apiSystemInt //Struktur
+OCR_MakeSearchable..Parameter[3]..Type=apiSystemInt //NULL
+OCR_MakeSearchable..CallingConvention = STDCALL
+
+
+Options.raster_dpi=300
+Options.ImageFlags=0x0001 //Autorotate
+Options.DataPath="d:\iFolder\_WDProjects\Plan_it_2015_OCR\Exe\ocrdats\"
+Options.lang=2 //"PXO_German"
+Options.RegionMode=1
+Options.accMode=0
+Options.blacklist=""
+Options.whitelist=""
+
+
+nPOinter is int=Null
+
+
+nErgebnis=OCR_MakeSearchable(nPDF,&Options,nPOinter )
+
+//Datei speichern -------------------------------------------------------------------------
+OCR_SaveW is API Description
+OCR_SaveW..DLLName="OcrTools.x86.dll"
+OCR_SaveW..FunctionName="OCR_SaveW"
+OCR_SaveW..ReturnType=apiSystemInt
+OCR_SaveW..Parameter[1]..Type=apiSystemInt//PDF
+OCR_SaveW..Parameter[2]..Type=apiUnicodeString //Dateiname
+OCR_SaveW..CallingConvention = STDCALL
+sDateiname="d:\output.pdf"
+nErgebnis=OCR_SaveW(nPDF,sDateiname)
+
+//Datei freigeben -------------------------------------------------------------------------
+VariableReset(nPDF)
+
+
+PROCEDURE OCR_Callback(pStage, pLevel, nPLparam are int):boolean
+
+//for progressbar or similar
+RESULT True
